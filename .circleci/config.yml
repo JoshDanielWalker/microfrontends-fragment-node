@@ -24,9 +24,9 @@ jobs:
     docker:
       - image: google/cloud-sdk
     environment:
-      - PROJECT_NAME: "fragment-node"
-      - GOOGLE_PROJECT_ID: "our-service-138623"
-      - GOOGLE_COMPUTE_ZONE: "europe-west1-b"
+      - PROJECT_NAME: "Cloud"
+      - GOOGLE_PROJECT_ID: "spherical-treat-243615"
+      - GOOGLE_COMPUTE_ZONE: "europe-west1-2"
       - GOOGLE_CLUSTER_NAME: "microfrontends"
     steps:
       - checkout
@@ -51,16 +51,16 @@ jobs:
               --build-arg COMMIT_REF=${CIRCLE_SHA1} \
               --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
               -f ./.deployment/docker/Dockerfile \
-              -t ${PROJECT_NAME} .
-            docker tag ${PROJECT_NAME} eu.gcr.io/${GOOGLE_PROJECT_ID}/${PROJECT_NAME}:${CIRCLE_SHA1}
+              -t cloud .
+            docker tag cloud eu.gcr.io/${GOOGLE_PROJECT_ID}/cloud:${CIRCLE_SHA1}
             gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://eu.gcr.io
-            docker push eu.gcr.io/${GOOGLE_PROJECT_ID}/${PROJECT_NAME}:${CIRCLE_SHA1}
+            docker push eu.gcr.io/${GOOGLE_PROJECT_ID}/cloud:${CIRCLE_SHA1}
       - run:
           name: Deploy to Kubernetes
           command: |
             helm template \
-              --name="${PROJECT_NAME}" \
-              --set Image.name="eu.gcr.io/${GOOGLE_PROJECT_ID}/${PROJECT_NAME}" \
+              --name="cloud" \
+              --set Image.name="eu.gcr.io/${GOOGLE_PROJECT_ID}/cloud" \
               --set Image.tag="${CIRCLE_SHA1}" \
               ./.deployment/chart \
               | kubectl apply -f -
